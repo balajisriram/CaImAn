@@ -2,7 +2,20 @@ CaImAn
 ======
 <img src="https://github.com/flatironinstitute/CaImAn/blob/master/docs/LOGOS/Caiman_logo_FI.png" width="500" align="right">
 
-
+# installation instructions for ACM lab:
+- Increase the maximum size of your pagefile to 64G or more (http://www.tomshardware.com/faq/id-2864547/manage-virtual-memory-pagefile-windows.html). The Windows memmap interface is sensitive to the maximum setting and leaving it at the default can cause errors when processing larger datasets
+- Install Microsoft Build Tools for Visual Studio 2017 https://www.visualstudio.com/downloads/#build-tools-for-visual-studio-2017. You can find older versions of visual studio in a link to older tools at the bottom of the page. Check the “Build Tools” box, and in the detailed view on the right check the “C/C++ CLI Tools” component too. The specifics of this occasionally change as Microsoft changes its products and website; you may need to go off-script.
+- open `anaconda` or `miniconda` terminal
+- Run following on the anaconda terminal
+``` 
+git clone https://github.com/balajisriram/CaImAn
+cd CaImAn
+conda env create -f environment.yml -n caiman
+conda install -n caiman vs2017_win-64
+conda activate caiman
+pip install .
+```
+**note**: If the `conda activate` fails with a Visual studio error, you will want to remove a startup script that visual studio made for your conda environment that can cause conda to crash while entering the caiman environment. Use the Windows find-file utility (under the Start Menu) to look for vs2015_compiler_vars.bat and/or vs2015_compiler_vars.bat under your home directory. At least one copy should show up. Delete the version that has conda:raw-latex:envs:raw-latex:`\caiman` as part of its location. You may then continue the installation.
 
 [![Join the chat at https://gitter.im/agiovann/SOURCE_EXTRACTION_PYTHON](https://badges.gitter.im/agiovann/SOURCE_EXTRACTION_PYTHON.svg)](https://gitter.im/agiovann/SOURCE_EXTRACTION_PYTHON?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
 
