@@ -93,12 +93,14 @@ class MotionCorrect(object):
     """
         class implementing motion correction operations
        """
+       
+    fname_orig = []
 
     def __init__(self, fname, min_mov=None, dview=None, max_shifts=(6, 6), niter_rig=1, splits_rig=14, num_splits_to_process_rig=None,
                  strides=(96, 96), overlaps=(32, 32), splits_els=14, num_splits_to_process_els=None,
                  upsample_factor_grid=4, max_deviation_rigid=3, shifts_opencv=True, nonneg_movie=True, gSig_filt=None,
                  use_cuda=False, border_nan=True, pw_rigid=False, num_frames_split=80, var_name_hdf5='mov',is3D=False,
-                 indices=(slice(None), slice(None))):
+                 indices=(slice(None), slice(None)),pre_smooth=False,pre_smooth_radius=10):
         """
         Constructor class for motion correction operations
 
@@ -172,6 +174,12 @@ class MotionCorrect(object):
 
             indices: tuple(slice), default: (slice(None), slice(None))
                Use that to apply motion correction only on a part of the FOV
+               
+            pre_smooth: bool, default: False
+               flag to check if the movie needs to be motion corrected before starting
+               
+            pre_smooth_radius: int, default: 10
+               if pre_smooth, this sets how much to pre_smooth
 
        Returns:
            self
@@ -207,6 +215,8 @@ class MotionCorrect(object):
         self.var_name_hdf5 = var_name_hdf5
         self.is3D = bool(is3D)
         self.indices = indices
+        self.pre_smooth = pre_smooth
+        self.pre_smooth_radius = pre_smooth_radius
         if self.use_cuda and not HAS_CUDA:
             logging.debug("pycuda is unavailable. Falling back to default FFT.")
 
@@ -230,6 +240,25 @@ class MotionCorrect(object):
         """
         # TODO: Review the docs here, and also why we would ever return self
         #       from a method that is not a constructor
+        
+        # before anything check if we need to pre_smooth and if so, do it
+        if self.pre_smooth:
+            base_dir = os.path.dirname(self.fname[0])
+            temp_folder = os.path.join(base_dir,'temp')
+            if not os.path.exists(temp_folder):
+                os.mkdir(temp_folder)
+            _fname_blur = []
+            rad = self.pre_smooth_radius
+            ksize = 3*rad//2*2+1
+            for _fname in self.fname: 
+                _base = os.path.splitext(os.path.basename(_fname))[0]
+                mov = cm.load(_fname)
+                mov.gaussian_blur_2D(kernel_size_x=ksize, kernel_size_y=ksize, kernel_std_x=rad, kernel_std_y=rad)
+                _fname_new = mov.save(os.path.join(temp_folder,_base+'.mmap'))
+                _fname_blur += [_fname_new]
+            self.fname_orig = self.fname
+            self.fname = _fname_blur
+            
         if self.min_mov is None:
             if self.gSig_filt is None:
                 self.min_mov = np.array([cm.load(self.fname[0],
@@ -251,10 +280,23 @@ class MotionCorrect(object):
                 b0 = np.ceil(np.maximum(np.max(np.abs(self.x_shifts_els)),
                                     np.max(np.abs(self.y_shifts_els))))
         else:
-            self.motion_correct_rigid(template=template, save_movie=save_movie)
+            if self.pre_smooth:
+                self.motion_correct_rigid(template=template, save_movie=False)
+                print('okay got the shifts, using on original files')
+                self.fname = self.fname_orig
+                movie_tot = self.apply_shifts_movie(self.fname_orig,save_memmap=False)
+                movie_tot.save(os.path.join(temp_folder,'MC_full_movie.mmap'),order='C')
+            else:
+                self.motion_correct_rigid(template=template, save_movie=save_movie)
             b0 = np.ceil(np.max(np.abs(self.shifts_rig)))
         self.border_to_0 = b0.astype(np.int)
-        self.mmap_file = self.fname_tot_els if self.pw_rigid else self.fname_tot_rig
+        if self.pw_rigid:
+            self.mmap_file = self.fname_tot_els
+        else:
+            if self.pre_smooth:
+                self.mmap_file = os.path.join(temp_folder,'MC_full_movie.mmap')
+            else:
+                self.mmap_file = self.fname_tot_rig
         return self
 
     def motion_correct_rigid(self, template=None, save_movie=False) -> None:
@@ -415,7 +457,6 @@ class MotionCorrect(object):
             m_reg: caiman movie object
                 caiman movie object with applied shifts (not memory mapped)
         """
-
         Y = cm.load(fname).astype(np.float32)
         if remove_min: 
             ymin = Y.min()
@@ -460,6 +501,7 @@ class MotionCorrect(object):
             big_mov[:] = np.reshape(m_reg.transpose(1, 2, 0), (np.prod(dims[1:]), dims[0]), order='F')
             big_mov.flush()
             del big_mov
+            breakpoint()
             return fname_tot
         else:
             return cm.movie(m_reg)

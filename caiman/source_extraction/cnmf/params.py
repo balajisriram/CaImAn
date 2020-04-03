@@ -832,26 +832,28 @@ class CNMFParams(object):
         }
 
         self.motion = {
-            'border_nan': 'copy',               # flag for allowing NaN in the boundaries
-            'gSig_filt': None,                  # size of kernel for high pass spatial filtering in 1p data
-            'is3D': False,                      # flag for 3D recordings for motion correction
-            'max_deviation_rigid': 3,           # maximum deviation between rigid and non-rigid
-            'max_shifts': (6, 6),               # maximum shifts per dimension (in pixels)
-            'min_mov': None,                    # minimum value of movie
-            'niter_rig': 1,                     # number of iterations rigid motion correction
-            'nonneg_movie': True,               # flag for producing a non-negative movie
-            'num_frames_split': 80,             # split across time every x frames
-            'num_splits_to_process_els': None,  # DO NOT MODIFY
-            'num_splits_to_process_rig': None,  # DO NOT MODIFY
-            'overlaps': (32, 32),               # overlap between patches in pw-rigid motion correction
-            'pw_rigid': False,                  # flag for performing pw-rigid motion correction
-            'shifts_opencv': True,              # flag for applying shifts using cubic interpolation (otherwise FFT)
-            'splits_els': 14,                   # number of splits across time for pw-rigid registration
-            'splits_rig': 14,                   # number of splits across time for rigid registration
-            'strides': (96, 96),                # how often to start a new patch in pw-rigid registration
-            'upsample_factor_grid': 4,          # motion field upsampling factor during FFT shifts
-            'use_cuda': False,                  # flag for using a GPU
-            'indices': (slice(None), slice(None))  # part of FOV to be corrected
+            'border_nan': 'copy',                   # flag for allowing NaN in the boundaries
+            'gSig_filt': None,                      # size of kernel for high pass spatial filtering in 1p data
+            'is3D': False,                          # flag for 3D recordings for motion correction
+            'max_deviation_rigid': 3,               # maximum deviation between rigid and non-rigid
+            'max_shifts': (6, 6),                   # maximum shifts per dimension (in pixels)
+            'min_mov': None,                        # minimum value of movie
+            'niter_rig': 1,                         # number of iterations rigid motion correction
+            'nonneg_movie': True,                   # flag for producing a non-negative movie
+            'num_frames_split': 80,                 # split across time every x frames
+            'num_splits_to_process_els': None,      # DO NOT MODIFY
+            'num_splits_to_process_rig': None,      # DO NOT MODIFY
+            'overlaps': (32, 32),                   # overlap between patches in pw-rigid motion correction
+            'pw_rigid': False,                      # flag for performing pw-rigid motion correction
+            'shifts_opencv': True,                  # flag for applying shifts using cubic interpolation (otherwise FFT)
+            'splits_els': 14,                       # number of splits across time for pw-rigid registration
+            'splits_rig': 14,                       # number of splits across time for rigid registration
+            'strides': (96, 96),                    # how often to start a new patch in pw-rigid registration
+            'upsample_factor_grid': 4,              # motion field upsampling factor during FFT shifts
+            'use_cuda': False,                      # flag for using a GPU
+            'indices': (slice(None), slice(None)),  # part of FOV to be corrected
+            'pre_smooth': False,                    # before analysis starts, should we smooth the video?
+            'pre_smooth_radius': 10                 # how much should we smooth the video?>
         }
 
         self.ring_CNN = {

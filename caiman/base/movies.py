@@ -1153,7 +1153,7 @@ class movie(ts.timeseries):
         """
 
         for idx, fr in enumerate(self):
-            logging.debug(idx)
+            #logging.debug(idx)
             self[idx] = cv2.GaussianBlur(fr,
                                          ksize=(kernel_size_x, kernel_size_y),
                                          sigmaX=kernel_std_x,

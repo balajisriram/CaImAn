@@ -196,9 +196,9 @@ class timeseries(np.ndarray):
         elif extension == '.avi':
             codec = None
             try:
-                codec = cv2.FOURCC('I', 'Y', 'U', 'V')
+                codec = cv2.FOURCC('D', 'I', 'V', 'X')
             except AttributeError:
-                codec = cv2.VideoWriter_fourcc(*'IYUV')
+                codec = cv2.VideoWriter_fourcc(*'DIVX')
             if q_max is None or q_min is None:
                 data = self.astype(np.uint8)
             else:
