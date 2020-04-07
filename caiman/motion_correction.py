@@ -285,6 +285,7 @@ class MotionCorrect(object):
                 print('okay got the shifts, using on original files')
                 self.fname = self.fname_orig
                 movie_tot = self.apply_shifts_movie(self.fname_orig,save_memmap=False)
+                movie_tot.gaussian_blur_2D(kernel_size_x=9, kernel_size_y=9, kernel_std_x=2, kernel_std_y=2) # change the kernel_std_x and kernel_std_y to get more or less blur
                 movie_tot.save(os.path.join(temp_folder,'MC_full_movie.mmap'),order='C')
             else:
                 self.motion_correct_rigid(template=template, save_movie=save_movie)
